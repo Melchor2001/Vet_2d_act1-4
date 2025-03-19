@@ -5,9 +5,13 @@
  */
 package LoginPage;
 
+import AdminsTable.Admin;
 import Config.config;
-import Users.Admin;
+import AdminsTable.UsersForm;
+import Config.Session;
+import Config.passwordHasher;
 import Users.User;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
@@ -31,17 +35,45 @@ public class Login extends javax.swing.JFrame {
     public static boolean loging_in(String username, String password){
         config conf = new config();
         try{
-            String query = "SELECT * FROM users WHERE uname = '"+username+"' AND pname = '"+password+"'";
+        String query = "SELECT * FROM users WHERE uname ='"+username+ "' ";
             ResultSet resultSet = conf.getData(query);
             if(resultSet.next()){
-                status = resultSet.getString("status");
+                
+             
+                String hashedPass= resultSet.getString("pname");
+                String rehashedPass = passwordHasher.hashPassword(password);
+                
+                  System.out.println(""+hashedPass );
+                   System.out.println(""+ rehashedPass );
+                  
+                     
+                  if ( hashedPass.equals(rehashedPass )){
+                        status = resultSet.getString("status");
                 type = resultSet.getString("account_type");
-                return true;
-            }else{
-                return false;
+                
+                
+                    Session ses = Session.getInstance();
+                    ses.setId(resultSet.getInt("id") );
+                    ses.setFname(resultSet.getString("fname") );
+                    ses.setLnmae(resultSet.getString("lname") );
+                      ses.setGender(resultSet.getString("gender") );
+                    ses.setAccount_type(resultSet.getString("account_type") );
+                    ses.setEmail(resultSet.getString("email") );
+                    ses.setUname(resultSet.getString("uname") );
+                    ses.setPname(resultSet.getString("pname") );
+                    ses.setContact(resultSet.getString("contact") );
+                    ses.setStatus(resultSet.getString("status") );
+                 return true;
+                  }else{
+                  return false;
+                  }
+                  
+                } else{
+                 return false;
             }
-        }catch(SQLException ex){
-            return false;
+            
+        }catch(SQLException | NoSuchAlgorithmException ex){
+            return false ;
         }
     }
 
@@ -174,7 +206,8 @@ public class Login extends javax.swing.JFrame {
                     .addContainerGap(44, Short.MAX_VALUE)))
         );
 
-        pack();
+        setSize(new java.awt.Dimension(751, 507));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel22MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel22MouseClicked

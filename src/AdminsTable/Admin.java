@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package Users;
+package AdminsTable;
 
 import Config.Session;
 import LoginPage.Login;
@@ -14,10 +14,10 @@ import javax.swing.JOptionPane;
  *
  * @author Raven
  */
-public class User extends javax.swing.JFrame {
+public class Admin extends javax.swing.JFrame {
 
     /** Creates new form User */
-    public User() {
+    public Admin() {
         initComponents();
     }
 
@@ -62,7 +62,7 @@ public class User extends javax.swing.JFrame {
 
         jLabel16.setFont(new java.awt.Font("Berlin Sans FB", 1, 24)); // NOI18N
         jLabel16.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel16.setText("User Dashboard");
+        jLabel16.setText("Admin Dashboard");
         jPanel10.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 10, 610, 40));
 
         jLabel28.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
@@ -110,11 +110,11 @@ public class User extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel11.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 270, 150, 40));
+        jPanel11.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 280, 150, 40));
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/vete_sugarol.png"))); // NOI18N
-        jPanel11.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 150, 290));
+        jPanel11.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 150, 320));
 
         jPanel9.add(jPanel11);
         jPanel11.setBounds(0, 60, 150, 330);
@@ -130,7 +130,7 @@ public class User extends javax.swing.JFrame {
         AUsers.setFont(new java.awt.Font("Times New Roman", 1, 14)); // NOI18N
         AUsers.setForeground(new java.awt.Color(255, 255, 255));
         AUsers.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        AUsers.setText("Account");
+        AUsers.setText("Users");
         AUsers.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         AUsers.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -160,8 +160,16 @@ public class User extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void AUsersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AUsersMouseClicked
+
+        UsersForm lg = new UsersForm();
+        lg.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_AUsersMouseClicked
+
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-         Session ses = Session.getInstance();
+      
+        Session ses = Session.getInstance();
        
         
         if (ses.getId()==0){
@@ -175,14 +183,8 @@ public class User extends javax.swing.JFrame {
         Acc_lname.setText(""+ses.getLnmae());
        
         }
+        
     }//GEN-LAST:event_formWindowActivated
-
-    private void AUsersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AUsersMouseClicked
-
-        accountDetails lg = new accountDetails();
-        lg.setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_AUsersMouseClicked
 
     /**
      * @param args the command line arguments
@@ -201,20 +203,21 @@ public class User extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(User.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(User.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(User.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(User.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new User().setVisible(true);
+                new Admin().setVisible(true);
             }
         });
     }

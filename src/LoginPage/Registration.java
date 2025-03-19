@@ -6,8 +6,12 @@
 package LoginPage;
 
 import Config.config;
+import Config.passwordHasher;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 /**
@@ -28,7 +32,7 @@ public class Registration extends javax.swing.JFrame {
     public boolean duplicateChecker(){
         config conf = new config();
         try{
-            String query = "SELECT * FROM users WHERE uname = '"+uname.getText()+"' OR email = '"+email.getText()+"'";
+            String query = "SELECT * FROM users WHERE email = '"+email.getText()+"' OR uname = '"+uname.getText()+"'";
             ResultSet resultSet = conf.getData(query);
             
             if(resultSet.next()){
@@ -83,13 +87,14 @@ public class Registration extends javax.swing.JFrame {
         jLabel35 = new javax.swing.JLabel();
         fname = new javax.swing.JTextField();
         pconfirm = new javax.swing.JPasswordField();
-        pname = new javax.swing.JPasswordField();
         jButton5 = new javax.swing.JButton();
         jLabel36 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         contact = new javax.swing.JTextField();
+        pname = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel9.setBackground(new java.awt.Color(204, 204, 204));
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -205,13 +210,6 @@ public class Registration extends javax.swing.JFrame {
         });
         jPanel9.add(pconfirm, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 210, 160, -1));
 
-        pname.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pnameActionPerformed(evt);
-            }
-        });
-        jPanel9.add(pname, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 170, 160, -1));
-
         jButton5.setBackground(new java.awt.Color(0, 255, 255));
         jButton5.setText("Register");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -232,24 +230,17 @@ public class Registration extends javax.swing.JFrame {
         jPanel9.add(jLabel24, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 290, 90, -1));
         jPanel9.add(contact, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 330, 160, -1));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(52, 52, 52)
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(39, 39, 39)
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
-        );
+        pname.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pnameActionPerformed(evt);
+            }
+        });
+        jPanel9.add(pname, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 170, 160, -1));
 
-        pack();
+        getContentPane().add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 30, -1, -1));
+
+        setSize(new java.awt.Dimension(770, 482));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel28MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel28MouseClicked
@@ -269,10 +260,6 @@ public class Registration extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_pconfirmActionPerformed
 
-    private void pnameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pnameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_pnameActionPerformed
-
     private void BackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BackActionPerformed
         // TODO add your handling code here:
         Login login = new Login();
@@ -289,7 +276,24 @@ public class Registration extends javax.swing.JFrame {
             || pname.getText().isEmpty()
             || contact.getText().isEmpty()){
             JOptionPane.showMessageDialog(null, "All Fields are Required!");
+            
         }else if(pname.getText().length()<8){
+              JOptionPane.showMessageDialog(null," Password should contain atleast 8 character above!");
+           
+            return;
+        }
+            String emails =email.getText();
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        Pattern patternEmail = Pattern.compile(emailRegex);
+        Matcher matcherEmail = patternEmail.matcher(emails);
+
+        if (!matcherEmail.matches()) {
+            JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
+            email.setText("");
+            email.requestFocus();
+
+        
+            
             JOptionPane.showMessageDialog(null, "Password Must be longer than 8!");
         }else if(!(pname.getText().equals(pconfirm.getText()))){
             JOptionPane.showMessageDialog(null, "Password does not much!");
@@ -297,17 +301,28 @@ public class Registration extends javax.swing.JFrame {
             System.out.println("Duplicate Exist!");
         }else{
             config conf = new config();
+             try {
+            String pass = passwordHasher.hashPassword(pname.getText());
+            
             if(conf.insertData("INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status) "
                 + "VALUES ('"+fname.getText()+"', '"+lname.getText()+"', '"+gender.getSelectedItem()+"'"
                 + ", '"+utype.getSelectedItem()+"', '"+email.getText()+"', '"+uname.getText()+"'"
-                + ", '"+pname.getText()+"', '"+contact.getText()+"', 'Pending')")==1){
+                + ", '"+pass+"', '"+contact.getText()+"', 'Pending')")==1){
             JOptionPane.showMessageDialog(null, "Registered Successfully!");
             Login login = new Login();
             login.setVisible(true);
             this.dispose();
             }
-        }
+        
+            }catch(NoSuchAlgorithmException ex){
+               System.out.println(""+ ex);
+           }
+        }       
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void pnameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pnameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_pnameActionPerformed
 
     /**
      * @param args the command line arguments
