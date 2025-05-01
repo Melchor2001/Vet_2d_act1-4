@@ -1,15 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package AdminsTable;
 
 import Config.Session;
 import Config.config;
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.table.TableModel;
 import net.proteanit.sql.DbUtils;
@@ -20,15 +27,96 @@ import net.proteanit.sql.DbUtils;
  */
 public class UsersForm extends javax.swing.JFrame {
 
-    /**
-     *  
-     */
     public UsersForm() {
         initComponents();
         displayData();
     }
     Color nc=new Color( 0,0,153);
        Color hc=new Color(77,85,204);
+       
+       
+       public String destination;
+   File selectedFile;
+   public String oldpath;
+   public String path;
+   
+    
+
+
+
+public int FileExistenceChecker(String path){
+        File file = new File(path);
+        String fileName = file.getName();
+        
+        Path filePath = Paths.get("src/Images", fileName);
+        boolean fileExists = Files.exists(filePath);
+        
+        if (fileExists) {
+            return 1;
+        } else {
+            return 0;
+        }
+    
+    }
+public void imageUpdater(String existingFilePath, String newFilePath){
+        File existingFile = new File(existingFilePath);
+        if (existingFile.exists()) {
+            String parentDirectory = existingFile.getParent();
+            File newFile = new File(newFilePath);
+            String newFileName = newFile.getName();
+            File updatedFile = new File(parentDirectory, newFileName);
+            existingFile.delete();
+            try {
+                Files.copy(newFile.toPath(), updatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("Image updated successfully.");
+            } catch (IOException e) {
+                System.out.println("Error occurred while updating the image: "+e);
+            }
+        } else {
+            try{
+                Files.copy(selectedFile.toPath(), new File(destination).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }catch(IOException e){
+                System.out.println("Error on update!");
+            }
+        }
+   }
+public ImageIcon ResizeImage(String ImagePath, byte[] pic, JLabel label) {
+    ImageIcon MyImage = (ImagePath != null) ? new ImageIcon(ImagePath) : new ImageIcon(pic);
+
+    int labelWidth = label.getWidth();
+    if (labelWidth == 0) labelWidth = 150; // fallback width if not initialized
+
+    int newHeight = getHeightFromWidth(ImagePath, labelWidth);
+    if (newHeight <= 0) newHeight = 150; // fallback height
+
+    Image img = MyImage.getImage();
+    Image newImg = img.getScaledInstance(labelWidth, newHeight, Image.SCALE_SMOOTH);
+    return new ImageIcon(newImg);
+}
+
+public static int getHeightFromWidth(String imagePath, int desiredWidth) {
+        try {
+            
+            File imageFile = new File(imagePath);
+            BufferedImage image = ImageIO.read(imageFile);
+            
+           
+            int originalWidth = image.getWidth();
+            int originalHeight = image.getHeight();
+            
+            
+            int newHeight = (int) ((double) desiredWidth / originalWidth * originalHeight);
+            
+            return newHeight;
+        } catch (IOException ex) {
+            System.out.println("No image found!"+ex);
+        }
+        
+        return -1;
+    }
+    public static String emails, usernames;
+    
+  
     public void displayData(){
         try{
             config conf = new config();
@@ -259,38 +347,60 @@ public class UsersForm extends javax.swing.JFrame {
 
     private void editMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_editMouseClicked
 
-        int rowIndex  = table_users.getSelectedRow();
-        if(rowIndex < 0){
-            JOptionPane.showMessageDialog(null,"Please Select Item!");
-        }else{
+    int rowIndex  = table_users.getSelectedRow();
+    if(rowIndex < 0){
+        JOptionPane.showMessageDialog(null,"Please Select Item!");
+    } else {
+        try {
+            config conf = new config();
+            TableModel tbl = table_users.getModel();
+            ResultSet rs = conf.getData("SELECT * FROM users WHERE id = '" + tbl.getValueAt(rowIndex, 0) + "'");
 
-            try{
-                config conf = new config();
-                TableModel tbl= table_users.getModel();
-                ResultSet rs=conf.getData("SELECT * FROM users WHERE id ='"+tbl.getValueAt(rowIndex, 0)+"'");
-                if(rs.next()){
+            if (rs.next()) {
+                addform adf = new addform();
+                adf.id.setText(rs.getString("id"));
+                adf.fname.setText(rs.getString("fname"));
+                adf.lname.setText(rs.getString("lname"));
+                adf.gender.setSelectedItem(rs.getString("gender"));
+                adf.email.setText(rs.getString("email"));
+                adf.uname.setText(rs.getString("uname"));
+                adf.pname.setText(rs.getString("pname"));
+                adf.contact.setText(rs.getString("contact"));
+                adf.ustatus.setSelectedItem(rs.getString("status"));
+                adf.pconfirm.setText(rs.getString("pname"));
 
-                    addform adf = new addform();
-                    adf.id.setText(""+rs.getString("id"));
-                    adf.fname.setText(""+rs.getString("fname"));
-                    adf.lname.setText(""+rs.getString("lname"));
+                String imagePath = rs.getString("image");
+                adf.oldpath = imagePath;
+                adf.path = imagePath;
+                adf.destination = imagePath;
 
-                    adf.gender.setSelectedItem(""+rs.getString("gender"));
-                    adf.email.setText(""+rs.getString("email"));
-                    adf.uname.setText(""+rs.getString("uname"));
-                    adf.pname.setText(""+rs.getString("pname"));
-                    adf.contact.setText(""+rs.getString("contact"));
-
-                    adf.a_add.setEnabled(false);
-                    adf.update.setEnabled(true);
-                    adf.setVisible(true);
-                    this.dispose();
+                
+                try {
+                    if (imagePath != null && !imagePath.isEmpty()) {
+                        adf.image.setIcon(adf.ResizeImage(imagePath, null, adf.image));
+                        adf.select.setEnabled(false);
+                        adf.remove.setEnabled(true);
+                    } else {
+                        adf.select.setEnabled(true);
+                        adf.remove.setEnabled(false);
+                    }
+                } catch (NullPointerException npEx) {
+                    System.out.println("Image loading failed: " + npEx.getMessage());
+                    adf.select.setEnabled(true);
+                    adf.remove.setEnabled(false);
                 }
-            }catch(SQLException ex){
-                System.out.println(""+ex);
-            }
-        }
 
+                adf.a_add.setEnabled(false);
+                adf.update.setEnabled(true);
+                adf.setVisible(true);
+                this.dispose();
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "An error occurred while retrieving user data.");
+        }
+    }
     }//GEN-LAST:event_editMouseClicked
 
     private void editMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_editMouseEntered

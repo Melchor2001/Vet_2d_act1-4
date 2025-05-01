@@ -8,8 +8,10 @@ package LoginPage;
 import AdminsTable.Admin;
 import Config.config;
 import AdminsTable.UsersForm;
+import Config.Logs;
 import Config.Session;
 import Config.passwordHasher;
+import Users.ForgotPassword;
 import Users.User;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -99,6 +101,7 @@ public class Login extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         pname = new javax.swing.JPasswordField();
         login = new javax.swing.JButton();
+        jLabel26 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -185,6 +188,17 @@ public class Login extends javax.swing.JFrame {
         });
         jPanel3.add(login, new org.netbeans.lib.awtextra.AbsoluteConstraints(540, 250, 80, -1));
 
+        jLabel26.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        jLabel26.setForeground(new java.awt.Color(102, 102, 255));
+        jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel26.setText("Forgot password");
+        jLabel26.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel26MouseClicked(evt);
+            }
+        });
+        jPanel3.add(jLabel26, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 240, 140, 30));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -226,31 +240,40 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_pnameActionPerformed
 
     private void loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginActionPerformed
-        // TODO add your handling code here:
         if(loging_in(uname.getText(), pname.getText())){
-            if(!status.equals("Active")){
-                JOptionPane.showMessageDialog(null, "In-Active Account, Contact the Admin!");
-            }else{
-                JOptionPane.showMessageDialog(null, "Login Successfully!");
-                if(type.equals("Admin")){
-                    Admin admin = new Admin();
-                    admin.setVisible(true);
-                    this.dispose();
-                }else{
-                    User user = new User();
-                    user.setVisible(true);
-                    this.dispose();
-                }
+        if(!status.equals("Active")){
+            JOptionPane.showMessageDialog(null, "In-Active Account, Contact the Admin!");
+        } else {
+            JOptionPane.showMessageDialog(null, "Login Successfully!");
+            
+            
+            Logs.logFunctionCall(uname.getText() + " logged in successfully");
+
+            if(type.equals("Admin")){
+                Admin admin = new Admin();
+                admin.setVisible(true);
+                this.dispose();
+            } else {
+                User user = new User();
+                user.setVisible(true);
+                this.dispose();
             }
-        }else{
-            JOptionPane.showMessageDialog(null, "Login Unsuccessfull!");
         }
+    } else {
+        JOptionPane.showMessageDialog(null, "Login Unsuccessful!");
+    }
     }//GEN-LAST:event_loginActionPerformed
 
     private void jLabel25MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel25MouseClicked
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_jLabel25MouseClicked
+
+    private void jLabel26MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel26MouseClicked
+       ForgotPassword fp = new ForgotPassword();
+       fp.setVisible(true);
+       this.dispose();
+    }//GEN-LAST:event_jLabel26MouseClicked
 
     /**
      * @param args the command line arguments
@@ -295,6 +318,7 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;

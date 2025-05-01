@@ -1,30 +1,114 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package AdminsTable;
 
+
+
+import Config.Logs;
 import Config.config;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author Raven
- */
+
 public class addform extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Registration
-     */
+
     public addform() {
         initComponents();
     }
+public String destination;
+   File selectedFile;
+   public String oldpath;
+   public String path;
+   
+    
 
+
+
+public int FileExistenceChecker(String path){
+        File file = new File(path);
+        String fileName = file.getName();
+        
+        Path filePath = Paths.get("src/Images", fileName);
+        boolean fileExists = Files.exists(filePath);
+        
+        if (fileExists) {
+            return 1;
+        } else {
+            return 0;
+        }
+    
+    }
+public void imageUpdater(String existingFilePath, String newFilePath){
+        File existingFile = new File(existingFilePath);
+        if (existingFile.exists()) {
+            String parentDirectory = existingFile.getParent();
+            File newFile = new File(newFilePath);
+            String newFileName = newFile.getName();
+            File updatedFile = new File(parentDirectory, newFileName);
+            existingFile.delete();
+            try {
+                Files.copy(newFile.toPath(), updatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("Image updated successfully.");
+            } catch (IOException e) {
+                System.out.println("Error occurred while updating the image: "+e);
+            }
+        } else {
+            try{
+                Files.copy(selectedFile.toPath(), new File(destination).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }catch(IOException e){
+                System.out.println("Error on update!");
+            }
+        }
+   }
+public ImageIcon ResizeImage(String ImagePath, byte[] pic, JLabel label) {
+    ImageIcon MyImage = (ImagePath != null) ? new ImageIcon(ImagePath) : new ImageIcon(pic);
+
+    int labelWidth = label.getWidth();
+    if (labelWidth == 0) labelWidth = 150; // fallback width if not initialized
+
+    int newHeight = getHeightFromWidth(ImagePath, labelWidth);
+    if (newHeight <= 0) newHeight = 150; // fallback height
+
+    Image img = MyImage.getImage();
+    Image newImg = img.getScaledInstance(labelWidth, newHeight, Image.SCALE_SMOOTH);
+    return new ImageIcon(newImg);
+}
+
+public static int getHeightFromWidth(String imagePath, int desiredWidth) {
+        try {
+            
+            File imageFile = new File(imagePath);
+            BufferedImage image = ImageIO.read(imageFile);
+            
+           
+            int originalWidth = image.getWidth();
+            int originalHeight = image.getHeight();
+            
+            
+            int newHeight = (int) ((double) desiredWidth / originalWidth * originalHeight);
+            
+            return newHeight;
+        } catch (IOException ex) {
+            System.out.println("No image found!"+ex);
+        }
+        
+        return -1;
+    }
     public static String emails, usernames;
     
     public boolean duplicateChecker(){
@@ -123,6 +207,11 @@ public class addform extends javax.swing.JFrame {
         pconfirm = new javax.swing.JPasswordField();
         ustatus = new javax.swing.JComboBox<>();
         jLabel37 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        image = new javax.swing.JLabel();
+        select = new javax.swing.JButton();
+        remove = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -138,7 +227,7 @@ public class addform extends javax.swing.JFrame {
         jLabel16.setForeground(new java.awt.Color(0, 255, 204));
         jLabel16.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel16.setText("Veterinarian");
-        jPanel10.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 670, 40));
+        jPanel10.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 10, 670, 40));
 
         jLabel28.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
         jLabel28.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -148,14 +237,14 @@ public class addform extends javax.swing.JFrame {
                 jLabel28MouseClicked(evt);
             }
         });
-        jPanel10.add(jLabel28, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 0, 40, 40));
+        jPanel10.add(jLabel28, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 0, 40, 40));
 
-        jPanel9.add(jPanel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 670, 60));
+        jPanel9.add(jPanel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 850, 60));
 
         jLabel12.setFont(new java.awt.Font("Berlin Sans FB", 1, 24)); // NOI18N
         jLabel12.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel12.setText("AddForm Page");
-        jPanel9.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 670, 50));
+        jPanel9.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 670, 40));
 
         jPanel11.setBackground(new java.awt.Color(102, 204, 255));
         jPanel11.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -334,9 +423,33 @@ public class addform extends javax.swing.JFrame {
         jLabel37.setText("User Status");
         jPanel9.add(jLabel37, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 250, 90, -1));
 
-        getContentPane().add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(52, 39, -1, 370));
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        setSize(new java.awt.Dimension(770, 482));
+        jLabel1.setText("jLabel1");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 90, 80, 50));
+        jPanel1.add(image, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 190, 220));
+
+        jPanel9.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 70, 190, 220));
+
+        select.setText("Select");
+        select.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectActionPerformed(evt);
+            }
+        });
+        jPanel9.add(select, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 310, -1, -1));
+
+        remove.setText("Remove");
+        remove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeActionPerformed(evt);
+            }
+        });
+        jPanel9.add(remove, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 310, -1, -1));
+
+        getContentPane().add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(52, 39, 850, 370));
+
+        setSize(new java.awt.Dimension(1019, 482));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -347,46 +460,74 @@ public class addform extends javax.swing.JFrame {
 
     private void a_addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_a_addActionPerformed
        
-        if(fname.getText().isEmpty()
-            || lname.getText().isEmpty()
-            || email.getText().isEmpty()
-            || uname.getText().isEmpty()
-            || pname.getText().isEmpty()
-            || contact.getText().isEmpty()){
-            JOptionPane.showMessageDialog(null, "All Fields are Required!");
-        }else if(pname.getText().length()<8){
-             pname.setText("");
-            JOptionPane.showMessageDialog(null, "Password Must be longer than 8!");
-            
-        }
-             String emails = this.email.getText();
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        Pattern patternEmail = Pattern.compile(emailRegex);
-        Matcher matcherEmail = patternEmail.matcher(emails);
+     
 
-        if (!matcherEmail.matches()) {
-            JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
-            this.email.setText("");
-            this.email.requestFocus();
+    if(fname.getText().isEmpty()
+        || lname.getText().isEmpty()
+        || email.getText().isEmpty()
+        || uname.getText().isEmpty()
+        || pname.getText().isEmpty()
+        || contact.getText().isEmpty()) {
 
-        }
+        
+        JOptionPane.showMessageDialog(null, "All Fields are Required!");
+        return;
+    }
 
-        else if(!(pname.getText().equals(pconfirm.getText()))){
-            JOptionPane.showMessageDialog(null, "Password does not much!");
-        }else if(duplicateChecker()){
-            System.out.println("Duplicate Exist!");
-        }else{
-            config conf = new config();
-            if(conf.insertData("INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status) "
-                + "VALUES ('"+fname.getText()+"', '"+lname.getText()+"', '"+gender.getSelectedItem()+"'"
-                + ", '"+utype.getSelectedItem()+"', '"+email.getText()+"', '"+uname.getText()+"'"
-                + ", '"+pname.getText()+"', '"+contact.getText()+"',  '"+ustatus.getSelectedItem()+"')")==1){
+    if(pname.getText().length() < 8) {
+        pname.setText("");
+        
+        JOptionPane.showMessageDialog(null, "Password Must be longer than 8!");
+        return;
+    }
+
+    String emails = this.email.getText();
+    String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    Pattern patternEmail = Pattern.compile(emailRegex);
+    Matcher matcherEmail = patternEmail.matcher(emails);
+
+    if (!matcherEmail.matches()) {
+        
+        JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
+        this.email.setText("");
+        this.email.requestFocus();
+        return;
+    }
+
+    if (!pname.getText().equals(pconfirm.getText())) {
+        
+        JOptionPane.showMessageDialog(null, "Password does not match!");
+        return;
+    }
+
+    if (duplicateChecker()) {
+        
+        System.out.println("Duplicate Exist!");
+        return;
+    }
+
+    config conf = new config();
+    int result = conf.insertData("INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status,image) "
+        + "VALUES ('"+fname.getText()+"', '"+lname.getText()+"', '"+gender.getSelectedItem()+"'"
+        + ", '"+utype.getSelectedItem()+"', '"+email.getText()+"', '"+uname.getText()+"'"
+        + ", '"+pname.getText()+"', '"+contact.getText()+"',  '"+ustatus.getSelectedItem()+"', '"+destination+"')");
+
+    if (result == 1) {
+        try {
+            Files.copy(selectedFile.toPath(), new File(destination).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Logs.logFunctionCall("Admin Registered a user succesfully");
             JOptionPane.showMessageDialog(null, "Registered Successfully!");
             UsersForm login = new UsersForm();
             login.setVisible(true);
             this.dispose();
+        } catch (IOException ex) {
+            Logs.logFunctionCall("File Copy Error");
+            System.out.println("Insert Error: " + ex);
         }
-        }
+    } else {
+        Logs.logFunctionCall("a_addActionPerformed - Insert Failed");
+    }
+        
     }//GEN-LAST:event_a_addActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
@@ -413,29 +554,52 @@ public class addform extends javax.swing.JFrame {
 
     private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
         if(fname.getText().isEmpty()
-            || lname.getText().isEmpty()
-            || email.getText().isEmpty()
-            || uname.getText().isEmpty()
-            || pname.getText().isEmpty()
-            || contact.getText().isEmpty()){
-            JOptionPane.showMessageDialog(null, "All Fields are Required!");
-        }else if(pname.getText().length()<8){
-            JOptionPane.showMessageDialog(null, "Password Must be longer than 8!");
-        }else if(!(pname.getText().equals(pconfirm.getText()))){
-            JOptionPane.showMessageDialog(null, "Password does not much!");
-        }else if(updateChecker()){
-            System.out.println("Duplicate Exist!");
-        }else{
+        || lname.getText().isEmpty()
+        || email.getText().isEmpty()
+        || uname.getText().isEmpty()
+        || pname.getText().isEmpty()
+        || contact.getText().isEmpty()){
+        JOptionPane.showMessageDialog(null, "All Fields are Required!");
+    } else if(pname.getText().length() < 8) {
+        JOptionPane.showMessageDialog(null, "Password Must be longer than 8!");
+    } else if(!pname.getText().equals(pconfirm.getText())) {
+        JOptionPane.showMessageDialog(null, "Password does not match!");
+    } else if(updateChecker()) {
+        System.out.println("Duplicate Exist!");
+    } else {
+        config conf = new config();
 
-            config conf = new config();
+        conf.updateData("UPDATE users SET fname='" + fname.getText() +
+            "', lname='" + lname.getText() +
+            "', email='" + email.getText() +
+            "', gender='" + gender.getSelectedItem() +
+            "', account_type='" + utype.getSelectedItem() +
+            "', uname='" + uname.getText() +
+            "', status='" + ustatus.getSelectedItem() +
+            "', pname='" + pname.getText() +
+            "', image='" + destination +
+            "' WHERE id='" + id.getText() + "'");
 
-            conf.updateData("UPDATE users SET fname='"+fname.getText()+"',lname ='"+lname.getText()+"',email ='"+email.getText()+"',gender ='"+gender.getSelectedItem()+"',account_type ='"+utype.getSelectedItem()+"',uname='"+uname.getText()+"',"
-                + "status ='"+ustatus.getSelectedItem()+"', pname='"+pname.getText()+"'  WHERE id = '"+id.getText()+"'  ");
-             JOptionPane.showMessageDialog(null, "Updated Successfully!");
-            UsersForm usf=  new  UsersForm();
-            usf.setVisible(true);
-            this.dispose();
+        if(destination.isEmpty()) {
+            File existingFile = new File(oldpath);
+            if(existingFile.exists()) {
+                existingFile.delete();
+            }
+        } else {
+            if(!oldpath.equals(path)) {
+                imageUpdater(oldpath, path);
+            }
         }
+
+        
+        Logs.logFunctionCall("Admin updated user with ID: " + id.getText());
+
+        JOptionPane.showMessageDialog(null, "Updated Successfully!");
+
+        UsersForm usf = new UsersForm();
+        usf.setVisible(true);
+        this.dispose();
+    }
 
     }//GEN-LAST:event_updateActionPerformed
 
@@ -462,6 +626,41 @@ public class addform extends javax.swing.JFrame {
     private void ustatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ustatusActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_ustatusActionPerformed
+
+    private void selectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectActionPerformed
+      JFileChooser fileChooser = new JFileChooser();
+                int returnValue = fileChooser.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        selectedFile = fileChooser.getSelectedFile();
+                        destination = "src/Images/" + selectedFile.getName();
+                        path  = selectedFile.getAbsolutePath();
+                        
+                        
+                        if(FileExistenceChecker(path) == 1){
+                          JOptionPane.showMessageDialog(null, "File Already Exist, Rename or Choose another!");
+                            destination = "";
+                            path="";
+                        }else{
+                            image.setIcon(ResizeImage(path, null, image));
+                            select.setEnabled(false);
+                            remove.setEnabled(true);
+                            
+                        }
+                    } catch (Exception ex) {
+                        System.out.println("File Error!"+ex);
+                    }
+                }
+
+    }//GEN-LAST:event_selectActionPerformed
+
+    private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
+         remove.setEnabled(false);
+       select.setEnabled(true);
+       image.setIcon(null);
+       destination = "";
+       path = "";
+    }//GEN-LAST:event_removeActionPerformed
 
     /**
      * @param args the command line arguments
@@ -509,6 +708,8 @@ public class addform extends javax.swing.JFrame {
     public javax.swing.JTextField fname;
     public javax.swing.JComboBox<String> gender;
     public javax.swing.JTextField id;
+    public javax.swing.JLabel image;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel23;
@@ -523,6 +724,7 @@ public class addform extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel37;
     private javax.swing.JLabel jLabel38;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel9;
@@ -530,6 +732,8 @@ public class addform extends javax.swing.JFrame {
     public javax.swing.JPasswordField pconfirm;
     public javax.swing.JPasswordField pname;
     public javax.swing.JButton refresh;
+    public javax.swing.JButton remove;
+    public javax.swing.JButton select;
     public javax.swing.JTextField uname;
     public javax.swing.JButton update;
     public javax.swing.JComboBox<String> ustatus;

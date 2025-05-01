@@ -5,6 +5,7 @@
  */
 package LoginPage;
 
+import Config.Logs;
 import Config.config;
 import Config.passwordHasher;
 import java.security.NoSuchAlgorithmException;
@@ -92,6 +93,8 @@ public class Registration extends javax.swing.JFrame {
         jLabel24 = new javax.swing.JLabel();
         contact = new javax.swing.JTextField();
         pname = new javax.swing.JPasswordField();
+        sq = new javax.swing.JComboBox<>();
+        ans = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -107,7 +110,7 @@ public class Registration extends javax.swing.JFrame {
         jLabel16.setForeground(new java.awt.Color(0, 255, 204));
         jLabel16.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel16.setText("Veterinarian");
-        jPanel10.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 670, 40));
+        jPanel10.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 920, 40));
 
         jLabel28.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
         jLabel28.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -117,9 +120,9 @@ public class Registration extends javax.swing.JFrame {
                 jLabel28MouseClicked(evt);
             }
         });
-        jPanel10.add(jLabel28, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 0, 40, 40));
+        jPanel10.add(jLabel28, new org.netbeans.lib.awtextra.AbsoluteConstraints(910, -10, 40, 40));
 
-        jPanel9.add(jPanel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 670, 60));
+        jPanel9.add(jPanel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 940, 60));
 
         jPanel11.setBackground(new java.awt.Color(255, 255, 255));
         jPanel11.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -237,9 +240,13 @@ public class Registration extends javax.swing.JFrame {
         });
         jPanel9.add(pname, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 170, 160, -1));
 
-        getContentPane().add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 30, -1, -1));
+        sq.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "What's your favorite food?", "What's your hobby?", "Who is your mother?", "What is your favorite place?", "What is your Code name?" }));
+        jPanel9.add(sq, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 130, 230, -1));
+        jPanel9.add(ans, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 170, 230, -1));
 
-        setSize(new java.awt.Dimension(770, 482));
+        getContentPane().add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 30, 940, -1));
+
+        setSize(new java.awt.Dimension(1012, 482));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -274,7 +281,11 @@ public class Registration extends javax.swing.JFrame {
             || email.getText().isEmpty()
             || uname.getText().isEmpty()
             || pname.getText().isEmpty()
-            || contact.getText().isEmpty()){
+            || contact.getText().isEmpty()
+            || sq.getSelectedItem() == null
+            || ans.getText().isEmpty())
+                {
+            
             JOptionPane.showMessageDialog(null, "All Fields are Required!");
             
         }else if(pname.getText().length()<8){
@@ -304,10 +315,13 @@ public class Registration extends javax.swing.JFrame {
              try {
             String pass = passwordHasher.hashPassword(pname.getText());
             
-            if(conf.insertData("INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status) "
+            if(conf.insertData("INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status,image,sq , ans) "
                 + "VALUES ('"+fname.getText()+"', '"+lname.getText()+"', '"+gender.getSelectedItem()+"'"
                 + ", '"+utype.getSelectedItem()+"', '"+email.getText()+"', '"+uname.getText()+"'"
-                + ", '"+pass+"', '"+contact.getText()+"', 'Pending')")==1){
+                + ", '"+pass+"', '"
+                    +contact.getText()+"' , 'Pending','', '"+sq.getSelectedItem()+"', '"+ans.getText()+"') ")==1){
+                
+                
             JOptionPane.showMessageDialog(null, "Registered Successfully!");
             Login login = new Login();
             login.setVisible(true);
@@ -361,6 +375,7 @@ public class Registration extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Back;
+    private javax.swing.JTextField ans;
     private javax.swing.JTextField contact;
     private javax.swing.JTextField email;
     private javax.swing.JTextField fname;
@@ -385,6 +400,7 @@ public class Registration extends javax.swing.JFrame {
     private javax.swing.JTextField lname;
     private javax.swing.JPasswordField pconfirm;
     private javax.swing.JPasswordField pname;
+    private javax.swing.JComboBox<String> sq;
     private javax.swing.JTextField uname;
     private javax.swing.JComboBox<String> utype;
     // End of variables declaration//GEN-END:variables

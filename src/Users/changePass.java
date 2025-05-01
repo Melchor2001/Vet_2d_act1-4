@@ -6,6 +6,7 @@
 
 package Users;
 
+import Config.Logs;
 import Config.Session;
 import Config.config;
 import Config.passwordHasher;
@@ -208,32 +209,35 @@ public class changePass extends javax.swing.JFrame {
     }//GEN-LAST:event_saveMouseClicked
 
     private void save1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save1MouseClicked
-        try{
-            config conf = new config();
-            Session ses = Session.getInstance();
+        try {
+        config conf = new config();
+        Session ses = Session.getInstance();
 
-            String query = "SELECT * from users WHERE id = '"+ses.getId()+"'";
-            ResultSet rs = conf.getData(query);
+        String query = "SELECT * from users WHERE id = '" + ses.getId() + "'";
+        ResultSet rs = conf.getData(query);
 
-            if(rs.next()){
+        if (rs.next()) {
+            String olddbpass = rs.getString("pname");
+            String oldhash = passwordHasher.hashPassword(oldpass.getText());
 
-                String  olddbpass=rs.getString("pname");
-                String oldhash = passwordHasher.hashPassword(oldpass.getText());
-                if(olddbpass.equals(oldhash)){
-                    String npass=passwordHasher.hashPassword(newpass.getText());
-                    conf.updateData("UPDATE users SET pname ='"+npass+"' ");
-                    JOptionPane.showMessageDialog(null,"updated  Succesfully!");
-                    Login lg = new Login();
-                    lg.setVisible(true);
-                    this.dispose();
-                }else{
-                    JOptionPane.showMessageDialog(null,"Old password is incorrect!");
-                }
+            if (olddbpass.equals(oldhash)) {
+                String npass = passwordHasher.hashPassword(newpass.getText());
+                conf.updateData("UPDATE users SET pname ='" + npass + "' WHERE id = '" + ses.getId() + "'");
+                JOptionPane.showMessageDialog(null, "Updated Successfully!");
 
+                
+                Logs.logFunctionCall("User ID " + ses.getId() + " changed their password.");
+
+                Login lg = new Login();
+                lg.setVisible(true);
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(null, "Old password is incorrect!");
             }
-        }catch(SQLException | NoSuchAlgorithmException ex){
-            System.out.println(""+ ex);
         }
+    } catch (SQLException | NoSuchAlgorithmException ex) {
+        System.out.println("" + ex);
+    }
 
     }//GEN-LAST:event_save1MouseClicked
 
