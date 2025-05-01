@@ -12,6 +12,7 @@ import Config.config;
 import Config.passwordHasher;
 import LoginPage.Login;
 import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
@@ -209,34 +210,49 @@ public class changePass extends javax.swing.JFrame {
     }//GEN-LAST:event_saveMouseClicked
 
     private void save1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save1MouseClicked
-        try {
+      try {
         config conf = new config();
         Session ses = Session.getInstance();
-
+        
+        // Fetch the user's id from the session to target the specific user
         String query = "SELECT * from users WHERE id = '" + ses.getId() + "'";
         ResultSet rs = conf.getData(query);
 
+        // Check if the user exists
         if (rs.next()) {
+            // Get the old password from the database
             String olddbpass = rs.getString("pname");
+
+            // Hash the input old password to compare with the stored one
             String oldhash = passwordHasher.hashPassword(oldpass.getText());
 
+            // If the old passwords match
             if (olddbpass.equals(oldhash)) {
+                // Hash the new password and update only the specific user's password
                 String npass = passwordHasher.hashPassword(newpass.getText());
-                conf.updateData("UPDATE users SET pname ='" + npass + "' WHERE id = '" + ses.getId() + "'");
-                JOptionPane.showMessageDialog(null, "Updated Successfully!");
-
                 
-                Logs.logFunctionCall("User ID " + ses.getId() + " changed their password.");
-
-                Login lg = new Login();
-                lg.setVisible(true);
-                this.dispose();
+                // Make sure to specify the user by their id in the WHERE clause
+                String updateQuery = "UPDATE users SET pname = ? WHERE id = ?";
+                try (PreparedStatement stmt = conf.getConnection().prepareStatement(updateQuery)) {
+                    stmt.setString(1, npass);  // Set the new password
+                    stmt.setInt(2, ses.getId()); // Set the logged-in user's id to target the specific user
+                    int rowsAffected = stmt.executeUpdate();
+                    
+                    if (rowsAffected == 1) {
+                        JOptionPane.showMessageDialog(null, "Password updated successfully!");
+                        Login lg = new Login();
+                        lg.setVisible(true);
+                        this.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "An error occurred while updating the password.");
+                    }
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Old password is incorrect!");
             }
         }
     } catch (SQLException | NoSuchAlgorithmException ex) {
-        System.out.println("" + ex);
+        System.out.println("Error: " + ex);
     }
 
     }//GEN-LAST:event_save1MouseClicked

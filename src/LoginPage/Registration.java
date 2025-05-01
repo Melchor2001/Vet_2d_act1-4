@@ -9,6 +9,9 @@ import Config.Logs;
 import Config.config;
 import Config.passwordHasher;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
@@ -21,9 +24,9 @@ import javax.swing.JOptionPane;
  */
 public class Registration extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Registration
-     */
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/veterinarian";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
     public Registration() {
         initComponents();
     }
@@ -275,63 +278,88 @@ public class Registration extends javax.swing.JFrame {
     }//GEN-LAST:event_BackActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
-        if(fname.getText().isEmpty()
-            || lname.getText().isEmpty()
-            || email.getText().isEmpty()
-            || uname.getText().isEmpty()
-            || pname.getText().isEmpty()
-            || contact.getText().isEmpty()
-            || sq.getSelectedItem() == null
-            || ans.getText().isEmpty())
-                {
-            
-            JOptionPane.showMessageDialog(null, "All Fields are Required!");
-            
-        }else if(pname.getText().length()<8){
-              JOptionPane.showMessageDialog(null," Password should contain atleast 8 character above!");
-           
-            return;
-        }
-            String emails =email.getText();
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        Pattern patternEmail = Pattern.compile(emailRegex);
-        Matcher matcherEmail = patternEmail.matcher(emails);
-
-        if (!matcherEmail.matches()) {
-            JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
-            email.setText("");
-            email.requestFocus();
-
+         // Validate required fields
+    if (fname.getText().isEmpty() || lname.getText().isEmpty() || email.getText().isEmpty()
+            || uname.getText().isEmpty() || pname.getText().isEmpty() || contact.getText().isEmpty()
+            || sq.getSelectedItem() == null || ans.getText().isEmpty()) {
         
-            
-            JOptionPane.showMessageDialog(null, "Password Must be longer than 8!");
-        }else if(!(pname.getText().equals(pconfirm.getText()))){
-            JOptionPane.showMessageDialog(null, "Password does not much!");
-        }else if(duplicateChecker()){
-            System.out.println("Duplicate Exist!");
-        }else{
-            config conf = new config();
-             try {
-            String pass = passwordHasher.hashPassword(pname.getText());
-            
-            if(conf.insertData("INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status,image,sq , ans) "
-                + "VALUES ('"+fname.getText()+"', '"+lname.getText()+"', '"+gender.getSelectedItem()+"'"
-                + ", '"+utype.getSelectedItem()+"', '"+email.getText()+"', '"+uname.getText()+"'"
-                + ", '"+pass+"', '"
-                    +contact.getText()+"' , 'Pending','', '"+sq.getSelectedItem()+"', '"+ans.getText()+"') ")==1){
-                
-                
-            JOptionPane.showMessageDialog(null, "Registered Successfully!");
-            Login login = new Login();
-            login.setVisible(true);
-            this.dispose();
+        JOptionPane.showMessageDialog(null, "All Fields are Required!");
+        return;  // Stop further execution if fields are missing
+    }
+
+    // Password length validation
+    if (pname.getText().length() < 8) {
+        JOptionPane.showMessageDialog(null, "Password should contain at least 8 characters!");
+        return;
+    }
+
+    // Email format validation
+    String emails = email.getText();
+    String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    Pattern patternEmail = Pattern.compile(emailRegex);
+    Matcher matcherEmail = patternEmail.matcher(emails);
+
+    if (!matcherEmail.matches()) {
+        JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
+        email.setText("");
+        email.requestFocus();
+        return;  // Stop further execution after showing error
+    }
+
+    // Password confirmation check
+    if (!pname.getText().equals(pconfirm.getText())) {
+        JOptionPane.showMessageDialog(null, "Password does not match!");
+        return;  // Stop further execution after showing error
+    }
+
+    // Check for duplicates
+    if (duplicateChecker()) {
+        JOptionPane.showMessageDialog(null, "Duplicate user exists!");
+        return;
+    }
+
+    // Continue with registration
+    try {
+        String pass = passwordHasher.hashPassword(pname.getText());
+
+        // SQL Query with placeholders for PreparedStatement
+        String query = "INSERT INTO users (fname, lname, gender, account_type, email, uname, pname, contact, status, image, sq, ans) "
+                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', '', ?, ?)";
+
+        // Create a prepared statement
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            // Set values for the placeholders
+            stmt.setString(1, fname.getText());
+            stmt.setString(2, lname.getText());
+            stmt.setString(3, gender.getSelectedItem().toString());
+            stmt.setString(4, utype.getSelectedItem().toString());
+            stmt.setString(5, email.getText());
+            stmt.setString(6, uname.getText());
+            stmt.setString(7, pass);
+            stmt.setString(8, contact.getText());
+            stmt.setString(9, sq.getSelectedItem().toString());
+            stmt.setString(10, ans.getText());
+
+            // Execute the update
+            int result = stmt.executeUpdate();
+
+            if (result == 1) {
+                JOptionPane.showMessageDialog(null, "Registered Successfully!");
+                Login login = new Login();
+                login.setVisible(true);
+                this.dispose();
             }
-        
-            }catch(NoSuchAlgorithmException ex){
-               System.out.println(""+ ex);
-           }
-        }       
+        }
+
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(null, "Error occurred while registering user. Please try again.");
+        ex.printStackTrace();  // Optionally print the exception for debugging
+    } catch (NoSuchAlgorithmException ex) {
+        JOptionPane.showMessageDialog(null, "Error occurred while hashing password. Please try again.");
+        ex.printStackTrace();  // Optionally print the exception for debugging
+    }
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void pnameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pnameActionPerformed
